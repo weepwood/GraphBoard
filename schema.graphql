@@ -1,0 +1,80 @@
+input CreateProjectInput {
+  workspaceId: ID!
+  name: String!
+  description: String = null
+}
+
+input CreateTaskInput {
+  projectId: ID!
+  title: String!
+  description: String = null
+  priority: TaskPriority! = MEDIUM
+}
+
+input CreateWorkspaceInput {
+  name: String!
+  description: String = null
+}
+
+"""Date with time (isoformat)"""
+scalar DateTime
+
+type Mutation {
+  createWorkspace(input: CreateWorkspaceInput!): WorkspaceType!
+  createProject(input: CreateProjectInput!): ProjectType!
+  createTask(input: CreateTaskInput!): TaskType!
+  updateTaskStatus(input: UpdateTaskStatusInput!): TaskType!
+}
+
+type ProjectType {
+  id: ID!
+  name: String!
+  description: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  tasks: [TaskType!]!
+}
+
+type Query {
+  health: String!
+  workspaces: [WorkspaceType!]!
+  project(id: ID!): ProjectType
+  tasks(projectId: ID = null): [TaskType!]!
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+type TaskType {
+  id: ID!
+  title: String!
+  description: String
+  status: TaskStatus!
+  priority: TaskPriority!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  project: ProjectType!
+}
+
+input UpdateTaskStatusInput {
+  taskId: ID!
+  status: TaskStatus!
+}
+
+type WorkspaceType {
+  id: ID!
+  name: String!
+  description: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  projects: [ProjectType!]!
+}

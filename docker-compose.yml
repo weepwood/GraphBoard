@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: graphboard
+      POSTGRES_USER: graphboard
+      POSTGRES_PASSWORD: graphboard
+    ports:
+      - "5432:5432"
+    volumes:
+      - graphboard-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U graphboard -d graphboard"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./apps/api
+    environment:
+      GRAPHBOARD_DATABASE_URL: postgresql+asyncpg://graphboard:graphboard@postgres:5432/graphboard
+      GRAPHBOARD_CORS_ORIGINS: '["http://localhost:5173","http://localhost:8080"]'
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./apps/web
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
+volumes:
+  graphboard-postgres:
